@@ -15,6 +15,9 @@ public class BallController : MonoBehaviour
     public LayerMask groundLayer;
     public string deathZoneTag = "DeathZone";
 
+    [Header("Death Detection")]
+    public float deathHeight = -5f;
+
     private Rigidbody rb;
     private bool isGrounded = false;
     private bool wasGrounded = false;
@@ -26,6 +29,11 @@ public class BallController : MonoBehaviour
     private bool isFinished = false;
 
     private BallSquash ballSquash;
+    public void UpdateSpeed(float multiplier)
+    {
+        forwardSpeed = baseSpeed * multiplier;
+        Debug.Log($"⚡ Speed updated to {forwardSpeed:F2} (base: {baseSpeed}, multiplier: {multiplier:F2})");
+    }
 
     void Start()
     {
@@ -38,8 +46,6 @@ public class BallController : MonoBehaviour
         rb.freezeRotation = true;
 
         ballSquash = GetComponent<BallSquash>();
-
-        // ✅ Orientation neutre — la boule va dans l'axe de la route dès le départ
         transform.rotation = Quaternion.identity;
 
         forwardSpeed = baseSpeed * (GameManager.Instance?.speedMultiplier ?? 1f);
@@ -47,11 +53,18 @@ public class BallController : MonoBehaviour
         Invoke(nameof(EnableMovement), 0.1f);
     }
 
+
     private void EnableMovement() => canMove = true;
 
     void Update()
     {
         if (!canMove || isDead || isFinished) return;
+
+        if (transform.position.y < deathHeight)
+        {
+            Die();
+            return;
+        }
 
         wasGrounded = isGrounded;
         isGrounded = CheckGrounded();
@@ -62,7 +75,6 @@ public class BallController : MonoBehaviour
         if (isGrounded && !wasGrounded && rb.linearVelocity.y < -1f)
             ballSquash?.Impact();
 
-        // Rotation à 90° entre X et Z UNIQUEMENT quand la boule est sur la route
         if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.RightArrow)) && isGrounded)
         {
             goingForward = !goingForward;
@@ -70,14 +82,12 @@ public class BallController : MonoBehaviour
             transform.rotation = Quaternion.Euler(0f, targetY, 0f);
         }
 
-        // Saut
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
             DoJump();
 
         bool hasGroundBelow = CheckGrounded();
         isFalling = !hasGroundBelow && !isGrounded;
 
-        // Petit boost si bloquée sur un bord
         if (isGrounded && rb.linearVelocity.magnitude < 0.05f)
         {
             rb.AddForce(-transform.forward * 3f, ForceMode.Impulse);
@@ -129,18 +139,45 @@ public class BallController : MonoBehaviour
     {
         if (other.CompareTag(deathZoneTag))
         {
-            if (!isDead)
-            {
-                isDead = true;
-                rb.linearVelocity = Vector3.zero;
-                GameManager.Instance?.OnPlayerDeath();
-            }
+            Debug.Log("💀 Trigger DeathZone activé!");
+            Die();
         }
 
         if (other.CompareTag("FinishZone"))
         {
             StopAtFinish();
         }
+    }
+
+    private void Die()
+    {
+        if (isDead) return;
+        
+        isDead = true;
+        rb.linearVelocity = Vector3.zero;
+        Debug.Log("💀 Player is dead! Calling GameManager.OnPlayerDeath()");
+        GameManager.Instance?.OnPlayerDeath();
+    }
+
+    public void ResetBall()
+    {
+        isDead = false;
+        isFinished = false;
+        canMove = false;
+        jumping = false;
+        goingForward = true;
+        
+        transform.rotation = Quaternion.identity;
+        
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.isKinematic = false;
+        }
+        
+        Invoke(nameof(EnableMovement), 0.1f);
+        Debug.Log("✅ Ball reset complete!");
     }
 
     public void StopAtFinish()

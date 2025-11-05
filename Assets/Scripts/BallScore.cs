@@ -28,6 +28,12 @@ public class BallScore : MonoBehaviour
         }
     }
 
+    public void ResetScore()
+    {
+        startPos = transform.position;
+        nextStep = distanceStep;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Crystal"))
@@ -36,7 +42,7 @@ public class BallScore : MonoBehaviour
             if (crystal != null)
             {
                 GameManager.Instance.AddScore(crystal.scoreValue);
-                Destroy(other.gameObject);
+                other.gameObject.SetActive(false);
             }
         }
     }
