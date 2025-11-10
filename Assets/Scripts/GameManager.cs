@@ -74,7 +74,6 @@ public class GameManager : MonoBehaviour
         if (retryUI != null)
         {
             retryUI.SetActive(false);
-            Debug.Log("🎮 GameUI désactivé au démarrage");
         }
 
         if (fadePanel != null)
@@ -95,6 +94,12 @@ public class GameManager : MonoBehaviour
         speedMultiplier = 1f;
         scoreMultiplier = 1f;
         loopCount = 0;
+        
+        if (LevelColorManager.Instance != null)
+        {
+            LevelColorManager.Instance.ApplyRandomColors();
+        }
+        
         StartCoroutine(StartGameSequence());
     }
 
@@ -152,9 +157,12 @@ public class GameManager : MonoBehaviour
 
     private IEnumerator RetryGameWithFade()
     {
-        Debug.Log("🔁 Retry button pressed - Starting fade out...");
-        
         yield return StartCoroutine(FadeToBlack());
+        
+        if (LevelColorManager.Instance != null)
+        {
+            LevelColorManager.Instance.ApplyRandomColors();
+        }
         
         runScore = 0;
         
@@ -220,8 +228,6 @@ public class GameManager : MonoBehaviour
         UpdateScoreUI();
         
         yield return StartCoroutine(FadeFromBlack());
-        
-        Debug.Log("✅ Game restarted!");
     }
 
     private IEnumerator FadeToBlack()
@@ -319,8 +325,6 @@ public class GameManager : MonoBehaviour
 
     public void OnPlayerDeath()
     {
-        Debug.Log($"💀 OnPlayerDeath called! retryUI null? {retryUI == null}");
-        
         isPlaying = false;
 
         if (scoreUI != null)
@@ -328,7 +332,6 @@ public class GameManager : MonoBehaviour
 
         if (retryUI != null)
         {
-            Debug.Log($"🎮 Activating GameUI... Current state: {retryUI.activeSelf}");
             retryUI.SetActive(true);
             
             CanvasGroup canvasGroup = retryUI.GetComponent<CanvasGroup>();
@@ -337,31 +340,18 @@ public class GameManager : MonoBehaviour
                 canvasGroup.alpha = 1f;
                 canvasGroup.interactable = true;
                 canvasGroup.blocksRaycasts = true;
-                Debug.Log("✅ CanvasGroup alpha set to 1");
             }
 
             Transform deathPanel = retryUI.transform.Find("DeathPanel");
             if (deathPanel != null)
             {
                 deathPanel.gameObject.SetActive(true);
-                Debug.Log("✅ DeathPanel activated");
             }
-            
-            Debug.Log($"🎮 GameUI activated! New state: {retryUI.activeSelf}");
-        }
-        else
-        {
-            Debug.LogError("❌ retryUI is NULL! Assign GameUI in Inspector!");
         }
 
         if (retryScoreText != null)
         {
             retryScoreText.text = "Score : " + runScore;
-            Debug.Log($"📊 Score text set to: {retryScoreText.text}");
-        }
-        else
-        {
-            Debug.LogError("❌ retryScoreText is NULL!");
         }
 
         if (runScore > highScore)
@@ -370,11 +360,6 @@ public class GameManager : MonoBehaviour
         if (highScoreText != null)
         {
             highScoreText.text = "Highscore : " + highScore;
-            Debug.Log($"🏆 Highscore text set to: {highScoreText.text}");
-        }
-        else
-        {
-            Debug.LogError("❌ highScoreText is NULL!");
         }
     }
 
@@ -386,8 +371,6 @@ public class GameManager : MonoBehaviour
     private IEnumerator LevelCompleteSequence()
     {
         isPlaying = false;
-        
-        Debug.Log($"🎉 Level complete! Loop {loopCount + 1}");
 
         if (camFollow != null)
             camFollow.enabled = false;
@@ -409,11 +392,14 @@ public class GameManager : MonoBehaviour
 
         yield return StartCoroutine(SlowFadeToBlack());
 
+        if (LevelColorManager.Instance != null)
+        {
+            LevelColorManager.Instance.ApplyRandomColors();
+        }
+
         loopCount++;
         speedMultiplier *= speedIncrease;
         scoreMultiplier *= scoreIncrease;
-
-        Debug.Log($"🚀 New speed multiplier: {speedMultiplier:F2}x, Score multiplier: {scoreMultiplier:F2}x");
 
         if (ball != null)
         {
@@ -458,7 +444,5 @@ public class GameManager : MonoBehaviour
         UpdateScoreUI();
 
         yield return StartCoroutine(SlowFadeFromBlack());
-
-        Debug.Log("✅ Next loop started!");
     }
 }

@@ -6,7 +6,7 @@ public class BallSquash : MonoBehaviour
     [Header("Références")]
     public Transform ballVisual;
 
-    [Header("Paramètres d’animation")]
+    [Header("Paramètres d'animation")]
     public float squashScale = 0.8f;
     public float stretchScale = 1.2f;
     public float impactScale = 0.7f;
@@ -14,6 +14,8 @@ public class BallSquash : MonoBehaviour
 
     private Vector3 originalScale;
     private Coroutine currentRoutine;
+    private Rigidbody rb;
+    private float lastYVelocity;
 
     void Start()
     {
@@ -21,11 +23,35 @@ public class BallSquash : MonoBehaviour
             ballVisual = transform;
 
         originalScale = ballVisual.localScale;
+        rb = GetComponent<Rigidbody>();
     }
 
-    public void Squash() => RestartRoutine(SquashRoutine());
-    public void Stretch() => RestartRoutine(StretchRoutine());
-    public void Impact() => RestartRoutine(ImpactRoutine());
+    void Update()
+    {
+        if (rb != null)
+        {
+            lastYVelocity = rb.linearVelocity.y;
+        }
+    }
+
+    public void Squash()
+    {
+        RestartRoutine(SquashRoutine());
+    }
+
+    public void Stretch()
+    {
+        RestartRoutine(StretchRoutine());
+    }
+
+    public void Impact()
+    {
+        float impactForce = Mathf.Abs(lastYVelocity);
+        if (impactForce > 1f)
+        {
+            RestartRoutine(ImpactRoutine());
+        }
+    }
 
     private void RestartRoutine(IEnumerator routine)
     {

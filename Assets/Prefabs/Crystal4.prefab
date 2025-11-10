@@ -12,6 +12,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Crystal4
       objectReference: {fileID: 0}
+    - target: {fileID: 2865040911238673721, guid: c7497affd86e403449b6908dfe80ff7d, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 221790d546747db43a4dd87dc275ab47, type: 2}
+    - target: {fileID: 5912414895794051582, guid: c7497affd86e403449b6908dfe80ff7d, type: 3}
+      propertyPath: scoreValue
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 5912414895794051582, guid: c7497affd86e403449b6908dfe80ff7d, type: 3}
       propertyPath: crystalValue
       value: 4
@@ -30,19 +38,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7600252266077685147, guid: c7497affd86e403449b6908dfe80ff7d, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.74278206
       objectReference: {fileID: 0}
     - target: {fileID: 7600252266077685147, guid: c7497affd86e403449b6908dfe80ff7d, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7600252266077685147, guid: c7497affd86e403449b6908dfe80ff7d, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 7600252266077685147, guid: c7497affd86e403449b6908dfe80ff7d, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: 0.6695333
       objectReference: {fileID: 0}
     - target: {fileID: 7600252266077685147, guid: c7497affd86e403449b6908dfe80ff7d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -54,7 +62,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7600252266077685147, guid: c7497affd86e403449b6908dfe80ff7d, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
+      value: 84.062
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -81,5 +89,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cbef984b99de06c4dbd7180fd255594a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  crystalValue: 5
-  playerTag: Player
+  scoreValue: 5

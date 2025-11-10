@@ -7,9 +7,21 @@ public class BallScore : MonoBehaviour
     private float nextStep = 5f;
     private Vector3 startPos;
 
+    [Header("Audio")]
+    public AudioClip pickCrystalSound;
+    [Range(0f, 1f)] public float pickCrystalVolume = 1f;
+    
+    private AudioSource audioSource;
+
     void Start()
     {
         startPos = transform.position;
+        audioSource = GetComponent<AudioSource>();
+        
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
 
     void Update()
@@ -42,6 +54,12 @@ public class BallScore : MonoBehaviour
             if (crystal != null)
             {
                 GameManager.Instance.AddScore(crystal.scoreValue);
+                
+                if (pickCrystalSound != null && audioSource != null)
+                {
+                    audioSource.PlayOneShot(pickCrystalSound, pickCrystalVolume);
+                }
+                
                 other.gameObject.SetActive(false);
             }
         }

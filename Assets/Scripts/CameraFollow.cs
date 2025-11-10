@@ -17,13 +17,10 @@ public class CameraFollow : MonoBehaviour
     {
         if (!target) return;
 
-        // Position toujours alignée avec la rotation de la boule
         Vector3 desiredPosition = target.position + target.TransformDirection(offset);
 
-        // Déplacement fluide
         transform.position = Vector3.Lerp(transform.position, desiredPosition, followSpeed * Time.deltaTime);
 
-        // Regarde la boule
         if (lookAtTarget)
         {
             Quaternion targetRot = Quaternion.LookRotation(target.position - transform.position);

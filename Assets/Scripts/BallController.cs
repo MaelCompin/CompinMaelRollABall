@@ -18,6 +18,16 @@ public class BallController : MonoBehaviour
     [Header("Death Detection")]
     public float deathHeight = -5f;
 
+    [Header("Audio")]
+    public AudioClip switchDirectionSound;
+    [Range(0f, 1f)] public float switchDirectionVolume = 1f;
+    
+    public AudioClip jumpSound;
+    [Range(0f, 1f)] public float jumpVolume = 1f;
+    
+    public AudioClip endJumpSound;
+    [Range(0f, 1f)] public float endJumpVolume = 1f;
+
     private Rigidbody rb;
     private bool isGrounded = false;
     private bool wasGrounded = false;
@@ -29,10 +39,11 @@ public class BallController : MonoBehaviour
     private bool isFinished = false;
 
     private BallSquash ballSquash;
+    private AudioSource audioSource;
+
     public void UpdateSpeed(float multiplier)
     {
         forwardSpeed = baseSpeed * multiplier;
-        Debug.Log($"⚡ Speed updated to {forwardSpeed:F2} (base: {baseSpeed}, multiplier: {multiplier:F2})");
     }
 
     void Start()
@@ -46,13 +57,19 @@ public class BallController : MonoBehaviour
         rb.freezeRotation = true;
 
         ballSquash = GetComponent<BallSquash>();
+        audioSource = GetComponent<AudioSource>();
+        
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        
         transform.rotation = Quaternion.identity;
 
         forwardSpeed = baseSpeed * (GameManager.Instance?.speedMultiplier ?? 1f);
 
         Invoke(nameof(EnableMovement), 0.1f);
     }
-
 
     private void EnableMovement() => canMove = true;
 
@@ -72,14 +89,18 @@ public class BallController : MonoBehaviour
         if (isGrounded && jumping)
             jumping = false;
 
-        if (isGrounded && !wasGrounded && rb.linearVelocity.y < -1f)
+        if (isGrounded && !wasGrounded)
+        {
             ballSquash?.Impact();
+            PlaySound(endJumpSound, endJumpVolume);
+        }
 
-        if ((Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.RightArrow)) && isGrounded)
+        if ((Input.GetMouseButtonDown(0) || IsDirectionKeyPressed()) && isGrounded)
         {
             goingForward = !goingForward;
             float targetY = goingForward ? 0f : 90f;
             transform.rotation = Quaternion.Euler(0f, targetY, 0f);
+            PlaySound(switchDirectionSound, switchDirectionVolume);
         }
 
         if (Input.GetKeyDown(KeyCode.Space) && isGrounded)
@@ -92,6 +113,21 @@ public class BallController : MonoBehaviour
         {
             rb.AddForce(-transform.forward * 3f, ForceMode.Impulse);
         }
+    }
+
+    private bool IsDirectionKeyPressed()
+    {
+        return Input.GetKeyDown(KeyCode.UpArrow) || Input.GetKeyDown(KeyCode.DownArrow) ||
+               Input.GetKeyDown(KeyCode.LeftArrow) || Input.GetKeyDown(KeyCode.RightArrow) ||
+               Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.B) || Input.GetKeyDown(KeyCode.C) ||
+               Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.F) ||
+               Input.GetKeyDown(KeyCode.G) || Input.GetKeyDown(KeyCode.H) || Input.GetKeyDown(KeyCode.I) ||
+               Input.GetKeyDown(KeyCode.J) || Input.GetKeyDown(KeyCode.K) || Input.GetKeyDown(KeyCode.L) ||
+               Input.GetKeyDown(KeyCode.M) || Input.GetKeyDown(KeyCode.N) || Input.GetKeyDown(KeyCode.O) ||
+               Input.GetKeyDown(KeyCode.P) || Input.GetKeyDown(KeyCode.Q) || Input.GetKeyDown(KeyCode.R) ||
+               Input.GetKeyDown(KeyCode.S) || Input.GetKeyDown(KeyCode.T) || Input.GetKeyDown(KeyCode.U) ||
+               Input.GetKeyDown(KeyCode.V) || Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.X) ||
+               Input.GetKeyDown(KeyCode.Y) || Input.GetKeyDown(KeyCode.Z);
     }
 
     void FixedUpdate()
@@ -115,6 +151,7 @@ public class BallController : MonoBehaviour
     {
         jumping = true;
         ballSquash?.Squash();
+        PlaySound(jumpSound, jumpVolume);
         Invoke(nameof(PerformJump), 0.08f);
     }
 
@@ -131,15 +168,22 @@ public class BallController : MonoBehaviour
 
     private bool CheckGrounded()
     {
-        float sphereRadius = 0.35f;
+        float sphereRadius = 0.25f;
         return Physics.SphereCast(transform.position, sphereRadius, Vector3.down, out _, groundCheckDistance, groundLayer);
+    }
+
+    private void PlaySound(AudioClip clip, float volume)
+    {
+        if (clip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clip, volume);
+        }
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag(deathZoneTag))
         {
-            Debug.Log("💀 Trigger DeathZone activé!");
             Die();
         }
 
@@ -155,7 +199,6 @@ public class BallController : MonoBehaviour
         
         isDead = true;
         rb.linearVelocity = Vector3.zero;
-        Debug.Log("💀 Player is dead! Calling GameManager.OnPlayerDeath()");
         GameManager.Instance?.OnPlayerDeath();
     }
 
@@ -177,7 +220,6 @@ public class BallController : MonoBehaviour
         }
         
         Invoke(nameof(EnableMovement), 0.1f);
-        Debug.Log("✅ Ball reset complete!");
     }
 
     public void StopAtFinish()
