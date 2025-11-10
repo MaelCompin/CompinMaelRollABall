@@ -43,8 +43,13 @@ public class GameManager : MonoBehaviour
     public float speedIncrease = 1.1f;
     public float scoreIncrease = 1.5f;
 
+    [Header("Audio")]
+    public AudioClip clickSound;
+    [Range(0f, 1f)] public float clickVolume = 1f;
+
     private BallController ball;
     private CameraFollow camFollow;
+    private AudioSource audioSource;
 
     void Awake()
     {
@@ -57,6 +62,12 @@ public class GameManager : MonoBehaviour
         ball = FindAnyObjectByType<BallController>();
         camFollow = FindAnyObjectByType<CameraFollow>();
         if (mainCamera == null) mainCamera = Camera.main;
+
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
 
         if (ball != null)
         {
@@ -91,6 +102,8 @@ public class GameManager : MonoBehaviour
 
     public void PlayGame()
     {
+        PlayClickSound();
+        
         speedMultiplier = 1f;
         scoreMultiplier = 1f;
         loopCount = 0;
@@ -149,6 +162,8 @@ public class GameManager : MonoBehaviour
 
     public void RetryGame()
     {
+        PlayClickSound();
+        
         speedMultiplier = 1f;
         scoreMultiplier = 1f;
         loopCount = 0;
@@ -228,6 +243,14 @@ public class GameManager : MonoBehaviour
         UpdateScoreUI();
         
         yield return StartCoroutine(FadeFromBlack());
+    }
+
+    private void PlayClickSound()
+    {
+        if (clickSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clickSound, clickVolume);
+        }
     }
 
     private IEnumerator FadeToBlack()
